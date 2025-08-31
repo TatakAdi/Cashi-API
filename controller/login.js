@@ -16,7 +16,6 @@ exports.login = async (req, res) => {
     res.json({
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
-      user: data.user,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

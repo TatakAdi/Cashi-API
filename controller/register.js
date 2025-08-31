@@ -30,7 +30,12 @@ exports.register = async (req, res) => {
       },
     });
 
-    res.json({ user });
+    res
+      .status(201)
+      .json({
+        message:
+          "User berhasil melakukan registrasi, silahkan konfirmasi email terlebih dahulu sebelum melanjutkan",
+      });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
