@@ -6,10 +6,91 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model user {
+  id String @id @default(uuid()) @unique @db.Uuid
+  name String
+  email String @unique
+  password String
+  balance Float
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  categories category[]
+  transaction transaction[]
+  budget budget[]
+}
+
+enum CategoryType {
+  Expenses
+  Income
+}
+
+model category {
+  id Int @id @default(autoincrement())
+  categoryName String
+  type  CategoryType
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // foreign keys
+  user_id String @db.Uuid
+  user user @relation(fields: [user_id], references: [id])
+
+  transaction transaction[]
+  budget budget[]
+}
+
+model transaction{
+  id Int @id @default(autoincrement())
+  transactionName String
+  type CategoryType
+  amount Float
+  transactionDate DateTime
+  Note String?
+  created_at DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  category_id Int
+  category category @relation(fields: [category_id], references: [id])
+
+  user_id String @db.Uuid
+  user user @relation(fields: [user_id], references: [id])
+}
+
+enum MonthEnum {
+  January
+  February
+  March
+  April
+  May
+  June
+  July
+  August
+  September
+  October
+  November
+  December
+}
+
+model budget {
+  id Int @id @default(autoincrement())
+  amount_limit Float
+  Month MonthEnum
+  Year Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  category_id Int
+  category category @relation(fields: [category_id], references: [id])
+
+  user_id String @db.Uuid
+  user user @relation(fields: [user_id], references: [id])
 }
