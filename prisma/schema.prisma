@@ -64,6 +64,9 @@ model transaction{
 
   user_id String @db.Uuid
   user user @relation(fields: [user_id], references: [id])
+
+  budget_id Int?
+  budget budget? @relation(fields: [budget_id],references: [id])
 }
 
 enum MonthEnum {
@@ -83,6 +86,7 @@ enum MonthEnum {
 
 model budget {
   id Int @id @default(autoincrement())
+  budgetName String @db.VarChar(255)
   amount_limit Float
   Month MonthEnum
   Year Int
@@ -94,4 +98,6 @@ model budget {
 
   user_id String @db.Uuid
   user user @relation(fields: [user_id], references: [id])
+
+  transactions transaction[]
 }
