@@ -88,6 +88,7 @@ model budget {
   id Int @id @default(autoincrement())
   budgetName String @db.VarChar(255)
   amount_limit Float
+  current_amount Float
   Month MonthEnum
   Year Int
   created_at DateTime @default(now())
