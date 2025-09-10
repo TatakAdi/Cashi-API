@@ -11,7 +11,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "build": "prisma generate",
-    "postinstall": "prima generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
