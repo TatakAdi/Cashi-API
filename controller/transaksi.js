@@ -63,6 +63,59 @@ exports.getAllTransactionperUser = async (req, res) => {
   }
 };
 
+exports.getOneTransactionperUser = async (req, res) => {
+  const userId = req.user.id;
+  const transactionId = parseInt(req.params.id);
+
+  try {
+    const data = await prisma.transaction.findFirst({
+      where: { id: transactionId, user_id: userId },
+      include: {
+        category: {
+          select: {
+            categoryName: true,
+          },
+        },
+        budget: {
+          select: {
+            budgetName: true,
+          },
+        },
+      },
+    });
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ succes: false, message: "Transaksi tidak dapat ditemukan" });
+    }
+
+    res.status(200).json({
+      succes: true,
+      message: "Transaksi berhasil diambil",
+      data: {
+        id: data.id,
+        trasactionName: data.transactionName,
+        type: data.type,
+        category: data.category.categoryName,
+        transactionDate: formatDate(data.transactionDate),
+        budget:
+          data.budget?.budgetName ??
+          "Transaksi ini tidak terikat dengan budget apapun",
+        amount: data.amount,
+        note: data.Note,
+        created_at: formatDate(data.created_at),
+        updated_at: formatDate(data.updated_at),
+      },
+    });
+  } catch (err) {
+    console.error("Internal server error: ", err);
+    res
+      .status(500)
+      .json({ succes: false, message: "Internal server error", error: err });
+  }
+};
+
 exports.createTransaction = async (req, res) => {
   const userId = req.user.id;
   const {
