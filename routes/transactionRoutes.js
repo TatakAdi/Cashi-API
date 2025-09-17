@@ -5,6 +5,7 @@ const {
   getAllTransactionperUser,
   getOneTransactionperUser,
   createTransaction,
+  updateTransaction,
 } = require("../controller/transaksi");
 
 const router = express.Router();
@@ -12,5 +13,5 @@ const router = express.Router();
 router.get("/transaction", authMiddleware, getAllTransactionperUser);
 router.get("/transaction/:id", authMiddleware, getOneTransactionperUser);
 router.post("/transaction", authMiddleware, createTransaction);
-
+router.put("/transaction/:id", authMiddleware, updateTransaction);
 module.exports = router;
