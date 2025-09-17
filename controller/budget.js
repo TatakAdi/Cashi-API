@@ -47,6 +47,44 @@ exports.getAllBudgetperUser = async (req, res) => {
   }
 };
 
+exports.getOneBudgetperUser = async (req, res) => {
+  const userId = req.user.id;
+  const budgetId = parseInt(req.params.id);
+
+  try {
+    const data = await prisma.budget.findFirst({
+      where: { user_id: userId, id: budgetId },
+      include: { category: { select: { categoryName: true } } },
+    });
+
+    if (data === null) {
+      return res
+        .status(400)
+        .json({ succes: false, message: "Gagal mengambil data budget user" });
+    }
+
+    res.status(200).json({
+      succes: true,
+      message: "Data budget berhasil diambil",
+      data: {
+        budgetName: data.budgetName,
+        amount_limit: data.amount_limit,
+        current_amount: data.current_amount,
+        category: data.category.categoryName,
+        Month: data.Month,
+        Year: data.Year,
+        created_at: formatDate(data.created_at),
+        updated_at: formatDate(data.created_at),
+      },
+    });
+  } catch (error) {
+    console.error("Internal server error: ", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error: error });
+  }
+};
+
 exports.createBudget = async (req, res) => {
   const userId = req.user.id;
   const { budgetName, amount, category, Month, Year } = req.body;
