@@ -148,3 +148,94 @@ exports.createBudget = async (req, res) => {
       .json({ succes: false, message: "Internal server error", error: error });
   }
 };
+
+exports.updateBudget = async (req, res) => {
+  const userId = req.user.id;
+  const budgetId = parseInt(req.params.id);
+  const { budgetName, category, Month, Year, amount } = req.body;
+
+  try {
+    const existBudget = await prisma.budget.findFirst({
+      where: { user_id: userId, id: budgetId },
+    });
+
+    if (!existBudget) {
+      console.log("Budget tidak dapat ditemukan");
+      return res
+        .status(404)
+        .json({ succes: false, message: "Budget tidak dapat ditemukan" });
+    }
+
+    const updatedData = {};
+    if (budgetName !== undefined && budgetName !== "") {
+      updatedData.budgetName = budgetName;
+    }
+    if (Year !== undefined && Year !== "") {
+      updatedData.Year = Year;
+    }
+
+    if (Month !== undefined && Month !== "") {
+      const monthArray = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      if (monthArray.includes(Month)) {
+        updatedData.Month = Month;
+      }
+    }
+
+    if (category !== undefined && category !== "") {
+      const existCategory = await prisma.category.findFirst({
+        where: { user_id: userId, categoryName: category },
+      });
+
+      if (!existCategory) {
+        console.log("Data kategori yang ingin diperbarui belum terdata");
+        return res.status(403).json({
+          success: false,
+          message: "Data kategori yang ingin diperbarui belum terdata",
+        });
+      }
+
+      updatedData.category = category;
+    }
+
+    if (amount !== undefined && amount !== "") {
+      const oldAmountLimit = existBudget.amount_limit;
+      const oldCurrentAmount = existBudget.current_amount;
+      const diff = oldAmountLimit - oldCurrentAmount;
+
+      updatedData.amount_limit = amount;
+      updatedData.current_amount = amount - diff;
+    }
+
+    await prisma.budget.update({
+      where: { user_id: userId, id: budgetId },
+      data: { ...updatedData, updated_at: new Date() },
+    });
+
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Data budget berhasil diperbarui",
+        data: { ...updatedData },
+      });
+  } catch (error) {
+    console.error("Internal server error: ", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error: error });
+  }
+};
