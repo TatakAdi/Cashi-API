@@ -106,6 +106,23 @@ exports.createTransaction = async (req, res) => {
     const txYear = txDate.getFullYear();
     const txMonth = txDate.getMonth() + 1;
 
+    const monthMap = {
+      1: "January",
+      2: "February",
+      3: "March",
+      4: "April",
+      5: "May",
+      6: "June",
+      7: "July",
+      8: "August",
+      9: "September",
+      10: "October",
+      11: "November",
+      12: "December",
+    };
+
+    const txMonthString = monthMap[txMonth];
+
     const existTransaction = await prisma.transaction.findFirst({
       where: {
         transactionName: transactionName,
@@ -126,7 +143,7 @@ exports.createTransaction = async (req, res) => {
     }
 
     if (budgetData) {
-      if ((budgetData.Year = txYear && budgetData.Month == txMonth)) {
+      if ((budgetData.Year = txYear && budgetData.Month == txMonthString)) {
         await prisma.budget.update({
           where: {
             id: budgetData.id,

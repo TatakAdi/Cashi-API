@@ -225,17 +225,54 @@ exports.updateBudget = async (req, res) => {
       data: { ...updatedData, updated_at: new Date() },
     });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Data budget berhasil diperbarui",
-        data: { ...updatedData },
-      });
+    res.status(200).json({
+      success: true,
+      message: "Data budget berhasil diperbarui",
+      data: { ...updatedData },
+    });
   } catch (error) {
     console.error("Internal server error: ", error);
     res
       .status(500)
       .json({ success: false, message: "Internal server error", error: error });
+  }
+};
+
+exports.deleteBudget = async (req, res) => {
+  const userId = req.user.id;
+  const budgetId = parseInt(req.params.id);
+
+  try {
+    const existBudget = await prisma.budget.findFirst({
+      where: { user_id: userId, id: budgetId },
+    });
+
+    if (!existBudget) {
+      console.log("Budget yang ingin dihapus tidak ada di database");
+      return res.status(404).json({
+        success: false,
+        message: "Budget yang ingin dihapus tidak ada di database",
+      });
+    }
+
+    //update data transaksi yang memiliki budget
+    await prisma.transaction.updateMany({
+      where: { user_id: userId, budget_id: budgetId },
+      data: { budget_id: null },
+    });
+
+    // Delete budget
+    await prisma.budget.delete({
+      where: { user_id: userId, id: budgetId },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Data budget berhasil dihapuskan" });
+  } catch (err) {
+    console.error("Internal server error: ", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error: err });
   }
 };
