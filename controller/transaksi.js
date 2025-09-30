@@ -267,6 +267,8 @@ exports.updateTransaction = async (req, res) => {
   const { transactionName, transactionDate, category, type, budget, amount } =
     req.body;
 
+  const isFilled = (v) => v !== undefined && v !== "";
+
   try {
     // Mencari transaksi yang ingin diupdate datanya.
     const existTransaction = await prisma.transaction.findFirst({
@@ -282,14 +284,42 @@ exports.updateTransaction = async (req, res) => {
 
     // Membuat variabel tempat untuk mengupdate data
     const updateData = {};
-    if (amount !== undefined && amount !== "") {
-      updateData.amount = amount;
+    if (isFilled(transactionName)) {
+      updateData.transactionName = transactionName;
     }
 
     const oldAmount = existTransaction?.amount;
+    const newAmount = isFilled(amount) ? amount : oldAmount;
+    if (isFilled(amount)) {
+      updateData.amount = newAmount;
+    }
 
-    // Pengecekan apabila ingin memperbarui data category
-    if (category !== undefined && category !== "") {
+    // Tentukan periode transaksi berdasarkan data transactionDate
+    const txDate = isFilled(transactionDate)
+      ? new Date(transactionDate)
+      : new Date(existTransaction.transactionDate);
+    const txYear = txDate.getFullYear();
+    const txMonth = txDate.getMonth() + 1;
+
+    const monthMap = {
+      1: "January",
+      2: "February",
+      3: "March",
+      4: "April",
+      5: "May",
+      6: "June",
+      7: "July",
+      8: "August",
+      9: "September",
+      10: "October",
+      11: "November",
+      12: "December",
+    };
+
+    const txMonthString = monthMap[txMonth];
+
+    // ================== Category ===================
+    if (isFilled(category)) {
       const existCategory = await prisma.category.findFirst({
         where: {
           categoryName: category,
@@ -308,30 +338,114 @@ exports.updateTransaction = async (req, res) => {
         });
       }
 
-      if (existCategory.type !== existTransaction.type) {
+      // Kalau perubahan category tidak dibarengi dengan perubahan tipe
+      if (existCategory.type !== existTransaction.type && !isFilled(type)) {
         console.log(
           "Update tidak dapat dilakukan karena tipe category beda dengan tipe transaksi"
         );
-        return res
-          .status(403)
-          .json({
-            succes: false,
-            message:
-              "Update tidak dapat dilakukan karena tipe category beda denga tipe transaksi",
-          });
+        return res.status(403).json({
+          succes: false,
+          message:
+            "Update tidak dapat dilakukan karena tipe category beda denga tipe transaksi",
+        });
       }
 
-      updateData.category_id = existCategory.id;
+      updateData.category = { connect: { id: existCategory.id } };
     }
 
-    // Pengecekan apabila ingin memperbarui data budget
+    // ================== Budget ===================
+    //Pengecekan apabila ada budget
     let existBudget;
-
-    if (budget !== undefined && budget !== "") {
+    if (isFilled(budget)) {
       existBudget = await prisma.budget.findFirst({
-        where: { budgetName: budget, user_id: userId },
+        where: {
+          budgetName: budget,
+          user_id: userId,
+          Year: txYear,
+          Month: txMonthString,
+        },
+      });
+    }
+
+    let movedBudget = false;
+
+    const hasOldBudget = existTransaction.budget_id !== null;
+    let oldBudgetRecord;
+    if (hasOldBudget) {
+      oldBudgetRecord = await prisma.budget.findFirst({
+        where: {
+          id: existTransaction.budget_id,
+          user_id: userId,
+        },
+      });
+    }
+
+    // ================= Jika hanya pindah tanggal saja ================
+    if (
+      isFilled(transactionDate) &&
+      existTransaction.budget_id !== null &&
+      !budget
+    ) {
+      movedBudget = true;
+      const oldBudget = await prisma.budget.findFirst({
+        where: {
+          id: existTransaction.budget_id,
+          user_id: userId,
+        },
       });
 
+      const newBudget = await prisma.budget.findFirst({
+        where: {
+          budgetName: oldBudget.budgetName,
+          user_id: userId,
+          Month: txMonthString,
+          Year: txYear,
+        },
+      });
+
+      if (!newBudget) {
+        console.log("Budget dengan periode baru tidak ditemukan");
+        return res.status(404).json({
+          success: false,
+          message: "Budget dengan periode baru tidak ditemukan",
+        });
+      }
+
+      // Rollback budget lama dengan oldAmount
+      await prisma.budget.update({
+        where: { user_id: userId, id: oldBudget.id },
+        data: { current_amount: { increment: oldAmount } },
+      });
+
+      // Tarik budget baru dengan newAmount
+      await prisma.budget.update({
+        where: { user_id: userId, id: newBudget.id },
+        data: { current_amount: { decrement: newAmount } },
+      });
+
+      updateData.budget = { connect: { id: newBudget.id } };
+    }
+
+    // ================= Pergantian Type ===================
+    // Pengecekan tipe transaksi
+    if (isFilled(type)) {
+      // Cek kalau tipe transaksi lama adalah Expenses
+      if (existTransaction.type === "Expenses" && type === "Income") {
+        // Ubah perubahan di budget kalau berpindah tipe.
+        if (existTransaction.budget_id !== null) {
+          await prisma.budget.update({
+            where: { user_id: userId, id: existTransaction.budget_id },
+            data: { current_amount: { increment: oldAmount } },
+          });
+        }
+        updateData.budget = { disconnect: true };
+      }
+      updateData.type = type;
+    }
+
+    // ================= Pergantian Budget ===================
+    // Pengecekan apabila ingin memperbarui data budget
+    if (isFilled(budget)) {
       if (!existBudget) {
         console.log(
           "Update tidak dapat dilakukan karena budget yang ingin diupdate belum terdata"
@@ -343,75 +457,114 @@ exports.updateTransaction = async (req, res) => {
         });
       }
 
-      updateData.budget_id = existBudget.id;
-    }
-
-    if (type !== undefined && type !== "") {
-      updateData.type = type;
-      if (existTransaction.type === "Income" && type === "Expenses") {
-        if (existBudget) {
-          await prisma.budget.update({
-            where: { user_id: userId, id: existBudget.id },
-            data: {
-              current_amount: { decrement: amount ?? oldAmount },
-            },
-          });
-        }
-      } else {
+      // Serangkaian perubahan pada data-data budget:
+      // 1. Apabila tipe tidak berubah namun budget ganti
+      if (
+        existTransaction.type === "Expenses" &&
+        existTransaction.budget_id !== null &&
+        existTransaction.budget_id !== existBudget.id
+      ) {
         await prisma.budget.update({
-          where: { user_id: userId, id: existBudget.id },
+          where: {
+            user_id: userId,
+            id: existTransaction.budget_id,
+            Year: txYear,
+            Month: txMonthString,
+          },
           data: { current_amount: { increment: oldAmount } },
         });
-        updateData.budget_id = null;
+
+        await prisma.budget.update({
+          where: {
+            user_id: userId,
+            id: existBudget.id,
+            Year: txYear,
+            Month: txMonthString,
+          },
+          data: { current_amount: { decrement: newAmount } },
+        });
       }
-    } else {
-      // Ini masih errror
-      if (existTransaction.type === "Expenses")
-        if (existBudget) {
-          if (oldAmount > amount) {
-            const newAmount = oldAmount - amount;
-            await prisma.budget.update({
-              where: { user_id: userId, id: existBudget.id },
-              data: { current_amount: { increment: newAmount } },
-            });
-          } else if (oldAmount < amount) {
-            const newAmount = amount - oldAmount;
-            await prisma.budget.update({
-              where: { user_id: userId, id: existBudget.id },
-              data: { current_amount: { decrement: newAmount } },
-            });
-          } else {
-            await prisma.budget.update({
-              where: { user_id: userId, id: existBudget.id },
-              data: {
-                current_amount: {
-                  decrement: amount ?? oldAmount,
-                },
-              },
-            });
-          }
-        }
+      //2. Apabila ada pergantian tipe
+      else if ((existTransaction.type = "Income" && type === "Expenses")) {
+        await prisma.budget.update({
+          where: { user_id: userId, id: existBudget.id },
+          data: { current_amount: { decrement: newAmount } }, // Kalau ada perubahan amount, utamakan amount
+        });
+      }
+      // 3. Apabila dulu budget null dan sekarang berisi
+      else if (existTransaction.budget_id === null) {
+        await prisma.budget.update({
+          where: { user_id: userId, id: existBudget.id },
+          data: { current_amount: { decrement: newAmount } },
+        });
+      }
+
+      updateData.budget = { connect: { id: existBudget.id } };
     }
 
-    if (transactionName !== undefined && transactionName !== "") {
-      updateData.transactionName = transactionName;
+    // 4. Apabila data budget tidak berubah, namun user melakukan perubahan amount
+    if (
+      (!movedBudget &&
+        existTransaction.budget_id !== null &&
+        isFilled(budget) &&
+        existBudget &&
+        existTransaction.budget_id === existBudget.id) ||
+      (!isFilled(budget) && isFilled(amount))
+    ) {
+      const diff = Math.abs(newAmount - oldAmount);
+
+      if (diff > 0) {
+        await prisma.budget.update({
+          where: { user_id: userId, id: existTransaction.budget_id },
+          data: {
+            current_amount:
+              newAmount > oldAmount ? { decrement: diff } : { increment: diff },
+          },
+        });
+      }
     }
-    if (transactionDate !== undefined && transactionDate !== "") {
-      updateData.transactionDate = transactionDate;
+
+    if (isFilled(transactionDate)) {
+      updateData.transactionDate = txDate;
     }
+    console.log(updateData);
 
     await prisma.transaction.update({
       where: { id: transactionId, user_id: userId },
       data: {
         ...updateData,
-        updated_at: new Date(),
       },
     });
+
+    // Perubahan pada balance user
+    if (isFilled(amount)) {
+      if (isFilled(type)) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            balance:
+              type === "Income"
+                ? { increment: newAmount - oldAmount }
+                : { decrement: newAmount - oldAmount },
+          },
+        });
+      } else {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            balance:
+              existTransaction.type === "Income"
+                ? { increment: newAmount - oldAmount }
+                : { decrement: newAmount - oldAmount },
+          },
+        });
+      }
+    }
 
     res.status(200).json({
       success: true,
       message: "Transaksi berhasi diupdate",
-      data: { ...updateData, updated_at: formatDate(new Date()) },
+      data: { ...updateData, updated_at: formatDate(+new Date()) },
     });
   } catch (err) {
     console.error("Internal server error: ", err);
