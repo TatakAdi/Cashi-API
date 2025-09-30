@@ -573,3 +573,52 @@ exports.updateTransaction = async (req, res) => {
       .json({ success: false, message: "Internal server error", error: err });
   }
 };
+
+exports.deleteTransaction = async (req, res) => {
+  const userId = req.user.id;
+  const transactionId = parseInt(req.params.id);
+
+  try {
+    const existTransaction = await prisma.transaction.findFirst({
+      where: { id: transactionId, user_id: userId },
+    });
+
+    if (!existTransaction) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Transaksi tidak ditemukan" });
+    }
+
+    if (existTransaction.budget_id !== null) {
+      await prisma.budget.update({
+        where: { id: existTransaction.budget_id, user_id: userId },
+        data: { current_amount: { increment: existTransaction.amount } },
+      });
+    }
+
+    if (existTransaction.type === "Income") {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { balance: { decrement: existTransaction.amount } },
+      });
+    } else {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { balance: { increment: existTransaction.amount } },
+      });
+    }
+
+    await prisma.transaction.delete({
+      where: { id: transactionId, user_id: userId },
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Transaksi berhasil dihapus" });
+  } catch (err) {
+    console.error("Internal server error: ", err);
+    res
+      .status(500)
+      .json({ success: false, message: "Internal server error", error: err });
+  }
+};
