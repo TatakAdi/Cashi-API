@@ -40,14 +40,14 @@ exports.getAllTransactionperUser = async (req, res) => {
       transactionName: item.transactionName,
       type: item.type,
       category: item.category.categoryName,
-      transactionDate: formatDate(item.transactionDate),
+      transactionDate: item.transactionDate,
       budget:
         item.budget?.budgetName ??
         "Transaksi ini tidak terikat dengan budget apapun",
       amount: item.amount,
       note: item.Note,
-      created_at: formatDate(item.created_at),
-      updated_at: formatDate(item.updated_at),
+      created_at: item.created_at,
+      updated_at: item.updated_at,
     }));
 
     res.status(200).json({
