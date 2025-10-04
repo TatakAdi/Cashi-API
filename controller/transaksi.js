@@ -37,7 +37,7 @@ exports.getAllTransactionperUser = async (req, res) => {
 
     const result = data.map((item) => ({
       id: item.id,
-      trasactionName: item.transactionName,
+      transactionName: item.transactionName,
       type: item.type,
       category: item.category.categoryName,
       transactionDate: formatDate(item.transactionDate),
@@ -95,7 +95,7 @@ exports.getOneTransactionperUser = async (req, res) => {
       message: "Transaksi berhasil diambil",
       data: {
         id: data.id,
-        trasactionName: data.transactionName,
+        transactionName: data.transactionName,
         type: data.type,
         category: data.category.categoryName,
         transactionDate: formatDate(data.transactionDate),
