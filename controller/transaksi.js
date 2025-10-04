@@ -41,9 +41,7 @@ exports.getAllTransactionperUser = async (req, res) => {
       type: item.type,
       category: item.category.categoryName,
       transactionDate: item.transactionDate,
-      budget:
-        item.budget?.budgetName ??
-        "Transaksi ini tidak terikat dengan budget apapun",
+      budget: item.budget?.budgetName ?? null,
       amount: item.amount,
       note: item.Note,
       created_at: item.created_at,
@@ -98,14 +96,12 @@ exports.getOneTransactionperUser = async (req, res) => {
         transactionName: data.transactionName,
         type: data.type,
         category: data.category.categoryName,
-        transactionDate: formatDate(data.transactionDate),
-        budget:
-          data.budget?.budgetName ??
-          "Transaksi ini tidak terikat dengan budget apapun",
+        transactionDate: data.transactionDate,
+        budget: data.budget?.budgetName ?? null,
         amount: data.amount,
         note: data.Note,
-        created_at: formatDate(data.created_at),
-        updated_at: formatDate(data.updated_at),
+        created_at: data.created_at,
+        updated_at: data.updated_at,
       },
     });
   } catch (err) {
