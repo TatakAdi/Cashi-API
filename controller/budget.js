@@ -58,6 +58,7 @@ exports.getOneBudgetperUser = async (req, res) => {
         category: { select: { categoryName: true } },
         transactions: {
           select: {
+            id: true,
             transactionName: true,
             amount: true,
             transactionDate: true,
