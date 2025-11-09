@@ -85,6 +85,7 @@ exports.getOneBudgetperUser = async (req, res) => {
         created_at: formatDate(data.created_at),
         updated_at: formatDate(data.created_at),
         transactions: data.transactions.map((t) => ({
+          id: t.id,
           transactionName: t.transactionName,
           amount: t.amount,
           transactionDate: t.transactionDate,
