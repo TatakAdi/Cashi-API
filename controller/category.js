@@ -63,6 +63,7 @@ exports.getAllCategoryperUser = async (req, res) => {
     }
 
     const result = data.map((item) => ({
+      id: item.id,
       categoryName: item.categoryName,
       type: item.type,
       created_at: formatDate(item.created_at),
