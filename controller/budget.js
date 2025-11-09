@@ -54,7 +54,16 @@ exports.getOneBudgetperUser = async (req, res) => {
   try {
     const data = await prisma.budget.findFirst({
       where: { user_id: userId, id: budgetId },
-      include: { category: { select: { categoryName: true } } },
+      include: {
+        category: { select: { categoryName: true } },
+        transactions: {
+          select: {
+            transactionName: true,
+            amount: true,
+            transactionDate: true,
+          },
+        },
+      },
     });
 
     if (data === null) {
@@ -75,6 +84,11 @@ exports.getOneBudgetperUser = async (req, res) => {
         Year: data.Year,
         created_at: formatDate(data.created_at),
         updated_at: formatDate(data.created_at),
+        transactions: data.transactions.map((t) => ({
+          transactionName: t.transactionName,
+          amount: t.amount,
+          transactionDate: t.transactionDate,
+        })),
       },
     });
   } catch (error) {
