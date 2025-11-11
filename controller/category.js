@@ -243,6 +243,23 @@ exports.deleteCategory = async (req, res) => {
       return res.status(404).json({ message: "Category tidak ditemukan" });
     }
 
+    const usedInBudget = await prisma.budget.findFirst({
+      where: { category_id: categoryId, user_id: userId },
+    });
+
+    const usedInTransaction = await prisma.transaction.findFirst({
+      where: { category_id: categoryId, user_id: userId },
+    });
+
+    if (usedInBudget || usedInTransaction) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Category tidak bisa dihapus karena masih digunakan di Budget atau Transaction, tidak dapat dihapus",
+        });
+    }
+
     await prisma.category.delete({
       where: { id: categoryId, user_id: userId },
     });
