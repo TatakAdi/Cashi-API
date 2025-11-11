@@ -4,22 +4,22 @@ const bcrypt = require("bcrypt");
 
 const defaultCategories = [
   // Expenses
-  { name: "Makanan & Minuman", type: "expense" },
-  { name: "Transportasi", type: "expense" },
-  { name: "Belanja", type: "expense" },
-  { name: "Hiburan", type: "expense" },
-  { name: "Tagihan", type: "expense" },
-  { name: "Pendidikan", type: "expense" },
-  { name: "Kesehatan", type: "expense" },
-  { name: "Hadiah / Donasi", type: "expense" },
-  { name: "Lainnya", type: "expense" },
+  { categoryName: "Makanan & Minuman", type: "Expenses" },
+  { categoryName: "Transportasi", type: "Expenses" },
+  { categoryName: "Belanja", type: "Expenses" },
+  { categoryName: "Hiburan", type: "Expenses" },
+  { categoryName: "Tagihan", type: "Expenses" },
+  { categoryName: "Pendidikan", type: "Expenses" },
+  { categoryName: "Kesehatan", type: "Expenses" },
+  { categoryName: "Hadiah / Donasi", type: "Expenses" },
+  { categoryName: "Lainnya", type: "Expenses" },
 
   // Income
-  { name: "Gaji", type: "income" },
-  { name: "Bonus", type: "income" },
-  { name: "Investasi", type: "income" },
-  { name: "Hadiah", type: "income" },
-  { name: "Lainnya", type: "income" },
+  { categoryName: "Gaji", type: "Income" },
+  { categoryName: "Bonus", type: "Income" },
+  { categoryName: "Investasi", type: "Income" },
+  { categoryName: "Hadiah", type: "Income" },
+  { categoryName: "Lainnya", type: "Income" },
 ];
 
 exports.register = async (req, res) => {
