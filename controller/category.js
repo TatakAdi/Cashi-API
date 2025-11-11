@@ -99,7 +99,7 @@ exports.getOneCategoryperUser = async (req, res) => {
       succes: true,
       message: "Category berhasil diambil",
       data: {
-        categoryId: data.id,
+        id: data.id,
         categoryName: data.categoryName,
         type: data.type,
         created_at: formatDate(data.created_at),
@@ -253,12 +253,10 @@ exports.deleteCategory = async (req, res) => {
     });
 
     if (usedInBudget || usedInTransaction) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Category tidak bisa dihapus karena masih digunakan di Budget atau Transaction, tidak dapat dihapus",
-        });
+      return res.status(400).json({
+        message:
+          "Category tidak bisa dihapus karena masih digunakan di Budget atau Transaction, tidak dapat dihapus",
+      });
     }
 
     await prisma.category.delete({
