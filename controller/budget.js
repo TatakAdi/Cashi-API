@@ -187,7 +187,7 @@ exports.updateBudget = async (req, res) => {
       updatedData.budgetName = budgetName;
     }
     if (Year !== undefined && Year !== "") {
-      updatedData.Year = Year;
+      updatedData.Year = typeof Year === "string" ? parseInt(Year) : Year;
     }
 
     if (Month !== undefined && Month !== "") {
@@ -224,7 +224,9 @@ exports.updateBudget = async (req, res) => {
         });
       }
 
-      updatedData.category = category;
+      updatedData.category = {
+        connect: { id: existCategory.id },
+      };
     }
 
     if (amount !== undefined && amount !== "") {
