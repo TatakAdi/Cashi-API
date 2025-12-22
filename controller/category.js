@@ -48,7 +48,7 @@ exports.getAllCategory = async (req, res) => {
 };
 
 exports.getAllCategoryperUser = async (req, res) => {
-  const userId = req.user.sub;
+  const userId = req.user.id;
   try {
     const data = await prisma.category.findMany({
       where: {
@@ -56,7 +56,7 @@ exports.getAllCategoryperUser = async (req, res) => {
       },
     });
 
-    if (data === null) {
+    if (data.length === 0) {
       return res.status(400).json({
         message: "Data kategori seorang user tidak ada/tidak bisa diambil",
       });
