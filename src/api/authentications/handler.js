@@ -7,35 +7,29 @@ class AuthenticationsHandler {
     autoBind(this);
   }
 
-  async registerHandler(req, res, next) {
+  async loginHandler(req, res, next) {
     try {
-      const { email, password, fullname, username } = req.body;
+      const { identity, password } = req.body;
 
-      await this._service.register({
-        email,
-        password,
-        fullname,
-        username,
-      });
+      const tokens = await this._service.login({ identity, password });
 
-      res.status(201).json({
+      res.json({
         status: "success",
-        message: "User registered successfully",
+        message: "Login success",
+        data: tokens,
       });
     } catch (err) {
       next(err);
     }
   }
 
-  async loginHandler(req, res, next) {
+  async refreshTokenVerifyHandler(req, res, next) {
     try {
-      const { identity, password } = req.body;
-
-      await this._service.login({ identity, password });
-
+      const { refreshToken } = req.body;
+      const tokens = await this._service.refreshAccessToken(refreshToken);
       res.json({
         status: "success",
-        message: "Login success",
+        data: tokens,
       });
     } catch (err) {
       next(err);

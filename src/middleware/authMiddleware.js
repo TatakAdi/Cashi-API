@@ -1,7 +1,8 @@
+const supabase = require("../config/supabase");
 const AuthenticationError = require("../exceptions/AuthenticationError");
 
-module.exports = (supabase) => {
-  async function authMiddleware(req, res, next) {
+module.exports = () => {
+  return async function authMiddleware(req, res, next) {
     try {
       const authHeader = req.headers.authorization;
 
@@ -22,5 +23,5 @@ module.exports = (supabase) => {
     } catch (err) {
       next(err);
     }
-  }
+  };
 };

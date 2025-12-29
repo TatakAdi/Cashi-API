@@ -1,13 +1,13 @@
 const routes = (handler) => [
   {
     method: "post",
-    path: "/register",
-    handler: handler.registerHandler,
+    path: "/login",
+    handler: handler.loginHandler,
   },
   {
     method: "post",
-    path: "/login",
-    handler: handler.loginHandler,
+    path: "/refresh",
+    handler: handler.refreshTokenVerifyHandler,
   },
 ];
 

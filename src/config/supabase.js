@@ -1,10 +1,14 @@
 const { createClient } = require("@supabase/supabase-js");
 
-function createSupabase() {
-  return createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SECRET_KEY
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_SECRET_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  console.error(
+    "WARNING: SUPABASE_URL and SUPABASE_SECRET_KEY must be set in .env file"
   );
 }
 
-module.exports = createSupabase;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+module.exports = supabase;

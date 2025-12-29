@@ -1,40 +1,19 @@
+const { nanoid } = require("nanoid");
+const prisma = require("../../config/prisma");
+const supabase = require("../../config/supabase");
 const bcrypt = require("bcrypt");
 const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
+const AuthenticationError = require("../../exceptions/AuthenticationError");
 
 class AuthenticationService {
-  constructor(prisma, supabase) {
-    this._prisma = prisma;
-    this._supabase = supabase;
-  }
-
-  async register({ email, password, fullname, username }) {
-    const { data, error } = await this._supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) throw new InvariantError(error.message);
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    await this._prisma.user.create({
-      data: {
-        id: data.user.id,
-        email,
-        fullname,
-        password: hashedPassword,
-        username,
-        balance: 0,
-      },
-    });
-  }
+  constructor() {}
 
   async login({ identity, password }) {
     let email = identity;
 
     if (!identity.includes("@")) {
-      const user = await this._prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { username: identity },
       });
 
@@ -44,18 +23,63 @@ class AuthenticationService {
       email = user.email;
     }
 
-    const { data, error } = await this._supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) throw new InvariantError(error.message);
 
-    await this._prisma.authentication.create({
+    const id = `token-${nanoid(16)}`;
+
+    await prisma.authentication.create({
       data: {
+        id: id,
         refresh_token: data.session.refresh_token,
         user_id: data.user.id,
       },
+    });
+
+    return {
+      accessToken: data.session.access_token,
+      refreshToken: data.session.refresh_token,
+    };
+  }
+
+  async refreshAccessToken(refreshToken) {
+    const storedToken = await prisma.authentication.findUnique({
+      where: { refresh_token: refreshToken },
+    });
+
+    if (!storedToken) {
+      throw new AuthenticationError("Invalid refresh token");
+    }
+
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+
+    if (error || !data.session) {
+      throw new AuthenticationError("Failed to refresh access token");
+    }
+
+    const newRefreshToken = data.session.refresh_token;
+    const newAccessToken = data.session.access_token;
+
+    await prisma.authentication.update({
+      where: { refresh_token: refreshToken },
+      data: { refresh_token: newRefreshToken },
+    });
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    };
+  }
+
+  async logout(refreshToken) {
+    await prisma.authentication.delete({
+      where: { refresh_token: refreshToken },
     });
   }
 }
