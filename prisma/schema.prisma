@@ -1,0 +1,103 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MonthEnum {
+  January
+  February
+  March
+  April
+  May
+  June
+  July
+  August
+  September
+  October
+  November
+  December
+}
+
+enum CategoryType {
+  Expenses
+  Income
+}
+
+model User {
+  id         String   @id @unique @default(uuid()) @db.Uuid
+  fullname       String
+  email      String   @unique
+  password   String
+  username   String   @unique
+  balance    Float
+  expense_categories String[]
+  income_categories String[]
+  is_admin    Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  transaction    Transaction[]
+  budget         Budget[]
+  authentication Authentication[]
+
+  @@map("users")
+}
+
+model Authentication {
+  id            String   @id
+  user_id       String   @db.Uuid
+  refresh_token String   @unique
+  created_at    DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("authentications")
+}
+
+model Transaction {
+  id              Int          @id @default(autoincrement())
+  transaction_name String
+  type            CategoryType
+  category        String
+  amount          Float
+  transaction_date DateTime
+  Note            String?
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  budget_id Int?
+  budget    Budget? @relation(fields: [budget_id], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+}
+
+model Budget {
+  id             Int       @id @default(autoincrement())
+  budget_name     String    @db.VarChar(255)
+  category       String
+  amount_limit   Float
+  current_amount Float
+  month          MonthEnum
+  year           Int
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  user_id String @db.Uuid
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+
+  @@map("budgets")
+}
