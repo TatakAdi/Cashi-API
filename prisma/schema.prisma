@@ -12,39 +12,28 @@ datasource db {
   provider = "postgresql"
 }
 
-enum MonthEnum {
-  January
-  February
-  March
-  April
-  May
-  June
-  July
-  August
-  September
-  October
-  November
-  December
-}
-
 enum CategoryType {
   Expenses
   Income
 }
 
+enum BudgetType {
+  Monthly
+  OpenEnded
+}
+
 model User {
   id         String   @id @unique @default(uuid()) @db.Uuid
-  fullname       String
+  fullname   String
   email      String   @unique
   password   String
   username   String   @unique
-  balance    Float
-  expense_categories String[]
-  income_categories String[]
+  balance    Float    @default(0)
   is_admin    Boolean  @default(false)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
+  categories     UserCategory[]
   transaction    Transaction[]
   budget         Budget[]
   authentication Authentication[]
@@ -63,14 +52,45 @@ model Authentication {
   @@map("authentications")
 }
 
+model Category {
+  id        Int     @id @default(autoincrement())
+  name      String  
+  slug      String
+  type      CategoryType
+  is_global Boolean @default(false)
+  owner_id  String? @db.Uuid
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users UserCategory[]
+  transactions Transaction[]
+  budgetLinks BudgetCategory[]
+
+  @@unique([slug,type,owner_id])
+  @@map("categories")
+}
+
+model UserCategory {
+  id    Int   @id @default(autoincrement())
+  user_id   String  @db.Uuid
+  category_id Int
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id],references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id,category_id])
+  @@map("user_categories")
+}
+
 model Transaction {
   id              Int          @id @default(autoincrement())
   transaction_name String
   type            CategoryType
-  category        String
   amount          Float
   transaction_date DateTime
-  Note            String?
+  note            String?
   created_at      DateTime     @default(now())
   updated_at      DateTime     @updatedAt
 
@@ -78,7 +98,10 @@ model Transaction {
   user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   budget_id Int?
-  budget    Budget? @relation(fields: [budget_id], references: [id], onDelete: Cascade)
+  budget    Budget? @relation(fields: [budget_id], references: [id], onDelete:SetNull)
+
+  category_id Int
+  category Category @relation(fields: [category_id],references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }
@@ -86,18 +109,54 @@ model Transaction {
 model Budget {
   id             Int       @id @default(autoincrement())
   budget_name     String    @db.VarChar(255)
-  category       String
+  type            BudgetType
+  
   amount_limit   Float
   current_amount Float
-  month          MonthEnum
-  year           Int
+
+  // time model
+  period_start  DateTime
+  period_end    DateTime?
+  last_reset_at DateTime?
+
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
   user_id String @db.Uuid
   user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  categories  BudgetCategory[]
   transactions Transaction[]
+  usages BudgetUsage[]
 
   @@map("budgets")
+}
+
+model BudgetCategory{
+  id  Int @id @default(autoincrement())
+  budget_id Int
+  category_id   Int
+
+  budget Budget @relation(fields: [budget_id], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
+
+  @@unique([budget_id,category_id])
+  @@map("budget_categories")
+}
+
+model BudgetUsage {
+  id  Int @id @default(autoincrement())
+  budget_id Int
+
+  period_start DateTime
+  period_end  DateTime
+  used_amount Float @default(0)
+
+  created_at  DateTime @default(now())
+
+
+  budget Budget @relation(fields: [budget_id], references: [id], onDelete: Cascade)
+
+  @@unique([budget_id, period_start])
+  @@map("budget_usages")
 }
