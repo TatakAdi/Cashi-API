@@ -1,21 +1,20 @@
 const { nanoid } = require("nanoid");
-const prisma = require("../../config/prisma");
 const supabase = require("../../config/supabase");
-const bcrypt = require("bcrypt");
+
 const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 const AuthenticationError = require("../../exceptions/AuthenticationError");
 
 class AuthenticationService {
-  constructor() {}
+  constructor(repository) {
+    this._repository = repository;
+  }
 
   async login({ identity, password }) {
     let email = identity;
 
     if (!identity.includes("@")) {
-      const user = await prisma.user.findUnique({
-        where: { username: identity },
-      });
+      const user = await this._repository.findUserByUsername(identity);
 
       if (!user) {
         throw new NotFoundError("Username not found");
@@ -32,12 +31,10 @@ class AuthenticationService {
 
     const id = `token-${nanoid(16)}`;
 
-    await prisma.authentication.create({
-      data: {
-        id: id,
-        refresh_token: data.session.refresh_token,
-        user_id: data.user.id,
-      },
+    await this._repository.saveRefreshToken({
+      id: id,
+      refreshToken: data.session.refresh_token,
+      userId: data.user.id,
     });
 
     return {
@@ -47,9 +44,7 @@ class AuthenticationService {
   }
 
   async refreshAccessToken(refreshToken) {
-    const storedToken = await prisma.authentication.findUnique({
-      where: { refresh_token: refreshToken },
-    });
+    const storedToken = await this._repository.findByRefreshToken(refreshToken);
 
     if (!storedToken) {
       throw new AuthenticationError("Invalid refresh token");
@@ -66,10 +61,7 @@ class AuthenticationService {
     const newRefreshToken = data.session.refresh_token;
     const newAccessToken = data.session.access_token;
 
-    await prisma.authentication.update({
-      where: { refresh_token: refreshToken },
-      data: { refresh_token: newRefreshToken },
-    });
+    await this._repository.updateRefreshToken(refreshToken, newRefreshToken);
 
     return {
       accessToken: newAccessToken,
@@ -78,9 +70,7 @@ class AuthenticationService {
   }
 
   async logout(refreshToken) {
-    await prisma.authentication.delete({
-      where: { refresh_token: refreshToken },
-    });
+    await this._repository.deleteRefreshToken(refreshToken);
   }
 }
 

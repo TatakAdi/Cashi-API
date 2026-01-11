@@ -3,30 +3,40 @@ require("dotenv").config();
 const express = require("express");
 const listEndpoints = require("express-list-endpoints");
 
+const prisma = require("./config/prisma");
+
+// Middleware
+const AuthMiddleware = require("./middleware/authMiddleware");
+const errorMiddleware = require("./middleware/errorMiddleware");
+
 // Users
 const users = require("./api/users");
 const UsersService = require("./services/postgres/UsersService");
+const UsersRepository = require("./repository/UsersRepository");
 
 // Authentications
 const authentication = require("./api/authentications");
 const AuthenticationsService = require("./services/postgres/AuthenticationsService");
-
-const AuthMiddleware = require("./middleware/authMiddleware");
-const errorMiddleware = require("./middleware/errorMiddleware");
+const AuthenticationsRepository = require("./repository/AuthenticationsRepository");
 
 const app = express();
 app.use(express.json());
 
 const authMiddleware = AuthMiddleware();
 
-const usersService = new UsersService();
-const authenticationsService = new AuthenticationsService();
+const usersRepository = new UsersRepository(prisma);
+const usersService = new UsersService(usersRepository);
+
+const authenticationRepository = new AuthenticationsRepository(prisma);
+const authenticationsService = new AuthenticationsService(
+  authenticationRepository
+);
 
 app.use(
   "/users",
   users({
     service: usersService,
-    middleware: authMiddleware,
+    authMiddleware,
   })
 );
 
@@ -34,7 +44,6 @@ app.use(
   "/authentications",
   authentication({
     service: authenticationsService,
-    middleware: authMiddleware,
   })
 );
 

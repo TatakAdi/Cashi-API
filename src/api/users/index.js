@@ -1,20 +1,15 @@
-const router = require("express").Router();
-const UsersHandler = require("./handler");
-const routes = require("./routes");
+const express = require("express");
+const UsersController = require("./users.controller");
+const validate = require("../../middleware/validateMiddleware");
+const { registerSchema } = require("./users.validation");
 
-module.exports = ({ service, middleware }) => {
-  const handler = new UsersHandler(service);
-  const routeDefinitions = routes(handler);
+module.exports = ({ service, authMiddleware }) => {
+  const router = express.Router();
+  const controller = new UsersController(service);
 
-  routeDefinitions.forEach((route) => {
-    const middlewares = [];
+  router.post("/", validate(registerSchema), controller.registerHandler);
 
-    if (route.options?.auth) {
-      middlewares.push(middleware);
-    }
-
-    router[route.method](route.path, ...middlewares, route.handler);
-  });
+  router.get("/me", authMiddleware, controller.getUserProfileHandler);
 
   return router;
 };

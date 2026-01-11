@@ -1,13 +1,9 @@
-const autoBind = require("auto-bind").default;
-
 class AuthenticationsHandler {
   constructor(service) {
     this._service = service;
-
-    autoBind(this);
   }
 
-  async loginHandler(req, res, next) {
+  loginHandler = async (req, res, next) => {
     try {
       const { identity, password } = req.body;
 
@@ -21,9 +17,9 @@ class AuthenticationsHandler {
     } catch (err) {
       next(err);
     }
-  }
+  };
 
-  async refreshTokenVerifyHandler(req, res, next) {
+  refreshTokenVerifyHandler = async (req, res, next) => {
     try {
       const { refreshToken } = req.body;
       const tokens = await this._service.refreshAccessToken(refreshToken);
@@ -34,7 +30,20 @@ class AuthenticationsHandler {
     } catch (err) {
       next(err);
     }
-  }
-}
+  };
 
+  logoutHandler = async (req, res, next) => {
+    try {
+      const { refreshToken } = req.body;
+      await this._service.logout(refreshToken);
+
+      res.json({
+        status: "success",
+        message: "Logout sukses",
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+}
 module.exports = AuthenticationsHandler;

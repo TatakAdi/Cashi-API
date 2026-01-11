@@ -1,20 +1,23 @@
-const router = require("express").Router();
-const AuthenticationsHandler = require("./handler");
-const routes = require("./routes");
+const express = require("express");
+const AuthController = require("./auths.controller");
+const validate = require("../../middleware/validateMiddleware");
 
-module.exports = ({ service, middleware }) => {
-  const handler = new AuthenticationsHandler(service);
-  const routeDefinitions = routes(handler);
+const {
+  loginSchema,
+  refreshTokenSchema,
+  logoutSchema,
+} = require("./auths.validation");
 
-  routeDefinitions.forEach((route) => {
-    const middlewares = [];
+module.exports = ({ service }) => {
+  const router = express.Router();
+  const controller = new AuthController(service);
 
-    if (route.options?.auth) {
-      middlewares.push(middleware);
-    }
-
-    router[route.method](route.path, ...middlewares, route.handler);
-  });
-
+  router.post("/login", validate(loginSchema), controller.loginHandler);
+  router.post(
+    "/refresh",
+    validate(refreshTokenSchema),
+    controller.refreshTokenVerifyHandler
+  );
+  router.post("/logout", validate(logoutSchema), controller.logoutHandler);
   return router;
 };
