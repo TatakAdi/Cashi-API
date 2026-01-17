@@ -4,8 +4,9 @@ const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 
 class UsersService {
-  constructor(usersRepository) {
-    this.usersRepository = usersRepository;
+  constructor(usersRepository, categoryRepository) {
+    this._usersRepository = usersRepository;
+    this._categoryRepository = categoryRepository;
   }
 
   async register(payload) {
@@ -21,19 +22,27 @@ class UsersService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = data.user.id;
 
-    await this.usersRepository.create({
-      id: data.user.id,
+    await this._usersRepository.create({
+      id: userId,
       email,
       password: hashedPassword,
       fullname,
       username,
       balance: 0,
     });
+
+    const globalCategories = await this._categoryRepository.getGlobalCategory();
+
+    await this._categoryRepository.attachCategoriesToUser(
+      userId,
+      globalCategories.map((c) => c.id),
+    );
   }
 
   async getProfile(userId) {
-    const user = await this.usersRepository.findById(userId);
+    const user = await this._usersRepository.findById(userId);
 
     if (!user) {
       throw new NotFoundError("User tidak ditemukan");

@@ -19,17 +19,21 @@ const authentication = require("./api/authentications");
 const AuthenticationsService = require("./services/postgres/AuthenticationsService");
 const AuthenticationsRepository = require("./repository/AuthenticationsRepository");
 
+// Category
+const CategoryRepository = require("./repository/CategoryRepository");
+
 const app = express();
 app.use(express.json());
 
 const authMiddleware = AuthMiddleware();
 
+const categoryRepository = new CategoryRepository(prisma);
 const usersRepository = new UsersRepository(prisma);
-const usersService = new UsersService(usersRepository);
-
 const authenticationRepository = new AuthenticationsRepository(prisma);
+
+const usersService = new UsersService(usersRepository, categoryRepository);
 const authenticationsService = new AuthenticationsService(
-  authenticationRepository
+  authenticationRepository,
 );
 
 app.use(
@@ -37,14 +41,14 @@ app.use(
   users({
     service: usersService,
     authMiddleware,
-  })
+  }),
 );
 
 app.use(
   "/authentications",
   authentication({
     service: authenticationsService,
-  })
+  }),
 );
 
 app.get("/health", (req, res) => {
