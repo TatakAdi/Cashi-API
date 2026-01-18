@@ -53,7 +53,7 @@ model Authentication {
 }
 
 model Category {
-  id        Int     @id @default(autoincrement())
+  id        String     @id 
   name      String  
   type      CategoryType
   is_global Boolean @default(false)
@@ -69,9 +69,9 @@ model Category {
 }
 
 model UserCategory {
-  id    Int   @id @default(autoincrement())
+  id    String   @id 
   user_id   String  @db.Uuid
-  category_id Int
+  category_id String
   created_at DateTime @default(now())
 
   user User @relation(fields: [user_id],references: [id], onDelete: Cascade)
@@ -82,7 +82,7 @@ model UserCategory {
 }
 
 model Transaction {
-  id              Int          @id @default(autoincrement())
+  id              String         @id 
   transaction_name String
   type            CategoryType
   amount          Float
@@ -94,17 +94,17 @@ model Transaction {
   user_id String @db.Uuid
   user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  budget_id Int?
+  budget_id String?
   budget    Budget? @relation(fields: [budget_id], references: [id], onDelete:SetNull)
 
-  category_id Int
+  category_id String
   category Category @relation(fields: [category_id],references: [id], onDelete: Cascade)
 
   @@map("transactions")
 }
 
 model Budget {
-  id             Int       @id @default(autoincrement())
+  id             String       @id 
   budget_name     String    @db.VarChar(255)
   type            BudgetType
   
@@ -130,9 +130,9 @@ model Budget {
 }
 
 model BudgetCategory{
-  id  Int @id @default(autoincrement())
-  budget_id Int
-  category_id   Int
+  id  String @id 
+  budget_id String
+  category_id   String
 
   budget Budget @relation(fields: [budget_id], references: [id], onDelete: Cascade)
   category Category @relation(fields: [category_id], references: [id], onDelete: Cascade)
@@ -142,8 +142,8 @@ model BudgetCategory{
 }
 
 model BudgetUsage {
-  id  Int @id @default(autoincrement())
-  budget_id Int
+  id  String @id 
+  budget_id String
 
   period_start DateTime
   period_end  DateTime

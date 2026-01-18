@@ -2,6 +2,7 @@
 const { PrismaClient } = require("@prisma/client");
 const { Pool } = require("pg");
 const { PrismaPg } = require("@prisma/adapter-pg");
+const { nanoid } = require("nanoid");
 
 const pool = new Pool({
   connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
@@ -45,6 +46,7 @@ async function main() {
     if (!exists) {
       await prisma.category.create({
         data: {
+          id: `category-${nanoid(16)}`,
           name,
           type: category.type,
           is_global: true,
