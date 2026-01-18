@@ -33,7 +33,8 @@ class UsersService {
       balance: 0,
     });
 
-    const globalCategories = await this._categoryRepository.getGlobalCategory();
+    const globalCategories =
+      await this._categoryRepository.getGlobalCategories();
 
     await this._categoryRepository.attachCategoriesToUser(
       userId,
