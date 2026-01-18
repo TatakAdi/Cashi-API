@@ -17,6 +17,8 @@ class CategoryService {
 
     const categoryId = result.id;
     await this._repository.attachNewCategoryFromUser(userId, categoryId);
+
+    return categoryId;
   }
 
   async getAllCategoryPerUser(userId, type) {

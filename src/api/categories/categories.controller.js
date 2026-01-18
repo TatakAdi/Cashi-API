@@ -7,11 +7,14 @@ class CategoriesHandler {
     const userId = req.user.id;
     const payload = req.body;
     try {
-      await this._service.createNewCategory(userId, payload);
+      const id = await this._service.createNewCategory(userId, payload);
 
       res.status(201).json({
         status: "success",
         message: "Kategori berhasil dibuat",
+        data: {
+          id,
+        },
       });
     } catch (error) {
       next(error);

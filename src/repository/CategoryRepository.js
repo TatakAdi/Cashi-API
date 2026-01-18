@@ -35,8 +35,10 @@ class CategoryRepository {
   }
 
   async attachNewCategoryFromUser(userId, categoryId) {
+    const id = `userCategory-${nanoid(16)}`;
     return this._prisma.userCategory.create({
       data: {
+        id,
         user_id: userId,
         category_id: categoryId,
       },
