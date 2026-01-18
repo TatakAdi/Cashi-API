@@ -20,8 +20,9 @@ class CategoriesHandler {
 
   getAllCategoryPerUserHandler = async (req, res, next) => {
     const userId = req.user.id;
+    const type = req.query.type;
     try {
-      const data = await this._service.getAllCategoryPerUser(userId);
+      const data = await this._service.getAllCategoryPerUser(userId, type);
 
       res.json({
         status: "success",

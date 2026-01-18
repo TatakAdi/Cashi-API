@@ -19,8 +19,10 @@ class CategoryService {
     await this._repository.attachNewCategoryFromUser(userId, categoryId);
   }
 
-  async getAllCategoryPerUser(userId) {
-    const result = await this._repository.getAllCategoryOneUser(userId);
+  async getAllCategoryPerUser(userId, type) {
+    const result = await this._repository.getAllCategoryOneUser(userId, {
+      type,
+    });
 
     return result.map((item) => item.category);
   }

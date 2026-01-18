@@ -50,9 +50,18 @@ class CategoryRepository {
     });
   }
 
-  async getAllCategoryOneUser(userId) {
+  async getAllCategoryOneUser(userId, filters = {}) {
+    const where = {
+      user_id: userId,
+    };
+
+    if (filters.type) {
+      where.category = {
+        type: filters.type,
+      };
+    }
     return this._prisma.userCategory.findMany({
-      where: { user_id: userId },
+      where,
       select: {
         id: true,
         category: {
@@ -63,6 +72,7 @@ class CategoryRepository {
           },
         },
       },
+      orderBy: { category: { name: "asc" } },
     });
   }
 
