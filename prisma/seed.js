@@ -11,10 +11,6 @@ const adapter = new PrismaPg(pool);
 
 const prisma = new PrismaClient({ adapter });
 
-function normalize(name) {
-  return name.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
 async function main() {
   const defaultCategories = [
     // EXPENSES
@@ -37,24 +33,21 @@ async function main() {
   ];
 
   for (const category of defaultCategories) {
-    const slug = normalize(category.name);
+    const name = category.name;
 
     const exists = await prisma.category.findFirst({
       where: {
-        slug,
+        name,
         type: category.type,
-        owner_id: null,
       },
     });
 
     if (!exists) {
       await prisma.category.create({
         data: {
-          name: category.name,
-          slug,
+          name,
           type: category.type,
           is_global: true,
-          owner_id: null,
         },
       });
     }

@@ -55,10 +55,8 @@ model Authentication {
 model Category {
   id        Int     @id @default(autoincrement())
   name      String  
-  slug      String
   type      CategoryType
   is_global Boolean @default(false)
-  owner_id  String? @db.Uuid
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -67,7 +65,6 @@ model Category {
   transactions Transaction[]
   budgetLinks BudgetCategory[]
 
-  @@unique([slug,type,owner_id])
   @@map("categories")
 }
 
