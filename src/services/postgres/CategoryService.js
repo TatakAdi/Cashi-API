@@ -16,11 +16,28 @@ class CategoryService {
     }
 
     const categoryId = result.id;
-    await this._repository.attachNewCategoryFromUser(
-      userCategoryId,
+    await this._repository.attachNewCategoryFromUser(userId, categoryId);
+  }
+
+  async getAllCategoryPerUser(userId) {
+    const result = await this._repository.getAllCategoryOneUser(userId);
+
+    return result.map((item) => item.category);
+  }
+
+  async getOneCategoryById(userId, categoryId) {
+    const result = await this._repository.verifyUserOwnCategory(
       userId,
       categoryId,
     );
+
+    if (!result.id) {
+      throw new NotFoundError("Kategori tidak ditemukan");
+    }
+
+    const data = await this._repository.findOneUserCategory(userId, categoryId);
+
+    return data;
   }
 }
 

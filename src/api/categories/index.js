@@ -6,5 +6,7 @@ module.exports = ({ service, authMiddleware }) => {
   const controller = new CategoryController(service);
 
   router.post("/", authMiddleware, controller.postCategoryHandler);
+  router.get("/", authMiddleware, controller.getAllCategoryPerUserHandler);
+  router.get("/:id", authMiddleware, controller.getOneCategoryByIdHandler);
   return router;
 };

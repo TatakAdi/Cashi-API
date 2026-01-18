@@ -50,9 +50,47 @@ class CategoryRepository {
     });
   }
 
+  async getAllCategoryOneUser(userId) {
+    return this._prisma.userCategory.findMany({
+      where: { user_id: userId },
+      select: {
+        id: true,
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findOneUserCategory(userId, categoryId) {
+    return this._prisma.userCategory.findFirst({
+      where: { user_id: userId, category_id: categoryId },
+      select: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+          },
+        },
+      },
+    });
+  }
+
   async findCategory(categoryId) {
     return this._prisma.category.findUnique({
       where: { id: categoryId },
+      select: { id: true },
+    });
+  }
+
+  async verifyUserOwnCategory(userId, categoryId) {
+    return this._prisma.userCategory.findFirst({
+      where: { user_id: userId, category_id: categoryId },
       select: { id: true },
     });
   }

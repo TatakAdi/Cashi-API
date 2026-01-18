@@ -17,6 +17,37 @@ class CategoriesHandler {
       next(error);
     }
   };
+
+  getAllCategoryPerUserHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    try {
+      const data = await this._service.getAllCategoryPerUser(userId);
+
+      res.json({
+        status: "success",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  getOneCategoryByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const categoryId = req.params.id;
+
+    try {
+      const data = await this._service.getOneCategoryById(userId, categoryId);
+
+      res.json({
+        status: "success",
+        message: "Data kategori berhasil diambil",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = CategoriesHandler;
