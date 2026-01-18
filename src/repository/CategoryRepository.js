@@ -24,7 +24,7 @@ class CategoryRepository {
     });
   }
   async createCategory(data) {
-    return this._prisma.category.create({ data });
+    return this._prisma.category.create({ data, select: { id: true } });
   }
 
   async attachNewCategoryFromUser(userId, categoryId) {

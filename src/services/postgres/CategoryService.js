@@ -3,12 +3,23 @@ const NotFoundError = require("../../exceptions/NotFoundError");
 const AuthenticationError = require("../../exceptions/AuthenticationError");
 
 class CategoryService {
-  constructor() {
-    this._prisma = prisma;
-    this._supabase = supabase;
+  constructor(repository) {
+    this._repository = repository;
   }
 
-  async createNewCategory(payload) {
+  async createNewCategory(userId, payload) {
     const { name, type } = payload;
+
+    const result = await this._repository.createCategory({ name, type });
+
+    if (!result) {
+      throw new InvariantError("Input Kategori salah");
+    }
+
+    const categoryId = result.id;
+
+    await this._repository.attachNewCategoryFromUser(userId, categoryId);
   }
 }
+
+module.exports = CategoryService;

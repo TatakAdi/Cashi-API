@@ -20,7 +20,9 @@ const AuthenticationsService = require("./services/postgres/AuthenticationsServi
 const AuthenticationsRepository = require("./repository/AuthenticationsRepository");
 
 // Category
+const categories = require("./api/categories");
 const CategoryRepository = require("./repository/CategoryRepository");
+const CategoryService = require("./services/postgres/CategoryService");
 
 const app = express();
 app.use(express.json());
@@ -35,6 +37,7 @@ const usersService = new UsersService(usersRepository, categoryRepository);
 const authenticationsService = new AuthenticationsService(
   authenticationRepository,
 );
+const categoryService = new CategoryService(categoryRepository);
 
 app.use(
   "/users",
@@ -49,6 +52,11 @@ app.use(
   authentication({
     service: authenticationsService,
   }),
+);
+
+app.use(
+  "/categories",
+  categories({ service: categoryService, authMiddleware }),
 );
 
 app.get("/health", (req, res) => {
