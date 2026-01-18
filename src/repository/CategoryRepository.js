@@ -1,3 +1,5 @@
+const { nanoid } = require("nanoid");
+
 class CategoryRepository {
   constructor(prisma) {
     this._prisma = prisma;
@@ -14,6 +16,7 @@ class CategoryRepository {
 
   async attachCategoriesToUser(userId, categoryIds) {
     const data = categoryIds.map((categoryId) => ({
+      id: `userCategory-${nanoid(16)}`,
       user_id: userId,
       category_id: categoryId,
     }));
@@ -24,7 +27,11 @@ class CategoryRepository {
     });
   }
   async createCategory(data) {
-    return this._prisma.category.create({ data, select: { id: true } });
+    const id = `category-${nanoid(16)}`;
+    return this._prisma.category.create({
+      data: { id, ...data },
+      select: { id: true },
+    });
   }
 
   async attachNewCategoryFromUser(userId, categoryId) {

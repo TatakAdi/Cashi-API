@@ -9,7 +9,6 @@ class CategoryService {
 
   async createNewCategory(userId, payload) {
     const { name, type } = payload;
-
     const result = await this._repository.createCategory({ name, type });
 
     if (!result) {
@@ -17,8 +16,11 @@ class CategoryService {
     }
 
     const categoryId = result.id;
-
-    await this._repository.attachNewCategoryFromUser(userId, categoryId);
+    await this._repository.attachNewCategoryFromUser(
+      userCategoryId,
+      userId,
+      categoryId,
+    );
   }
 }
 

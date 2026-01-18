@@ -35,7 +35,6 @@ class UsersService {
 
     const globalCategories =
       await this._categoryRepository.getGlobalCategories();
-
     await this._categoryRepository.attachCategoriesToUser(
       userId,
       globalCategories.map((c) => c.id),
