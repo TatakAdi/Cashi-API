@@ -52,6 +52,44 @@ class CategoriesHandler {
       next(error);
     }
   };
+
+  putCategoryByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const categoryId = req.params.id;
+    const payload = req.body;
+
+    try {
+      const data = await this._service.updateOneCategory(
+        userId,
+        categoryId,
+        payload,
+      );
+
+      res.json({
+        status: "success",
+        message: "Kategori berhasil diupdate",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteCategoryByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const categoryId = req.params.id;
+
+    try {
+      await this._service.deleteOneCategory(userId, categoryId);
+
+      res.json({
+        status: "Success",
+        message: "Kategori berhasil dihapus",
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = CategoriesHandler;

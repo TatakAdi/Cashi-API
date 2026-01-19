@@ -43,6 +43,51 @@ class CategoryService {
 
     return data;
   }
+
+  async updateOneCategory(userId, categoryId, payload) {
+    const category = await this._repository.verifyUserOwnCategory(
+      userId,
+      categoryId,
+    );
+
+    if (!category.id) {
+      throw new NotFoundError("Kategory tidak ditemukan");
+    }
+
+    const { name, type } = payload;
+
+    const result = await this._repository.updateCategory(categoryId, {
+      name,
+      type,
+    });
+
+    if (!result.id) {
+      throw new InvariantError("Terjadi kesalahan saat mengupdate kategori");
+    }
+
+    return result;
+  }
+
+  async deleteOneCategory(userId, categoryId) {
+    const category = await this._repository.verifyUserOwnCategory(
+      userId,
+      categoryId,
+    );
+
+    if (!category.id) {
+      throw new NotFoundError(
+        "Kategori tidak dapat ditemukan atau sudah dihapus",
+      );
+    }
+
+    await this._repository.removeCategoryFromUser(
+      category.id,
+      userId,
+      categoryId,
+    );
+
+    await this._repository.deleteCategory(categoryId);
+  }
 }
 
 module.exports = CategoryService;

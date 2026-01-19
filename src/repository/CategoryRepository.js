@@ -107,10 +107,11 @@ class CategoryRepository {
     });
   }
 
-  async updateCategory(categoryId, { data }) {
+  async updateCategory(categoryId, data) {
     return this._prisma.category.update({
       where: { id: categoryId },
       data,
+      select: { id: true },
     });
   }
 
@@ -120,9 +121,9 @@ class CategoryRepository {
     });
   }
 
-  async removeCategoryFromUser(userId, categoryId) {
+  async removeCategoryFromUser(id, userId, categoryId) {
     return this._prisma.userCategory.delete({
-      where: { user_id: userId, category_id: categoryId },
+      where: { id, user_id: userId, category_id: categoryId },
     });
   }
 }
