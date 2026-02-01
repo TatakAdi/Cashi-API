@@ -216,7 +216,7 @@ class BudgetRepository {
   }
 
   async findUsagesByBudget(budgetId) {
-    return this._prisma.budgetUsage.finMany({
+    return this._prisma.budgetUsage.findMany({
       where: { budget_id: budgetId },
     });
   }

@@ -24,6 +24,11 @@ const categories = require("./api/categories");
 const CategoryRepository = require("./repository/CategoryRepository");
 const CategoryService = require("./services/postgres/CategoryService");
 
+// Budget
+const budgets = require("./api/budgets");
+const BudgetRepository = require("./repository/BudgetsRepository");
+const BudgetService = require("./services/postgres/BudgetsService");
+
 const app = express();
 app.use(express.json());
 
@@ -32,12 +37,14 @@ const authMiddleware = AuthMiddleware();
 const categoryRepository = new CategoryRepository(prisma);
 const usersRepository = new UsersRepository(prisma);
 const authenticationRepository = new AuthenticationsRepository(prisma);
+const budgetRepository = new BudgetRepository(prisma);
 
 const usersService = new UsersService(usersRepository, categoryRepository);
 const authenticationsService = new AuthenticationsService(
   authenticationRepository,
 );
 const categoryService = new CategoryService(categoryRepository);
+const budgetService = new BudgetService(prisma, BudgetRepository);
 
 app.use(
   "/users",
@@ -58,6 +65,8 @@ app.use(
   "/categories",
   categories({ service: categoryService, authMiddleware }),
 );
+
+app.use("/budgets", budgets({ service: budgetService, authMiddleware }));
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });
