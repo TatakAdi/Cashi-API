@@ -14,12 +14,7 @@ module.exports = ({ service, authMiddleware }) => {
   );
   router.get("/", authMiddleware, controller.getBudgetsperUserHandler);
   router.get("/:id", authMiddleware, controller.getOneBudgetByIdperUserHandler);
-  // router.put(
-  //   "/:id",
-  //   validate(putCategorySchema),
-  //   authMiddleware,
-  //   controller.putCategoryByIdHandler,
-  // );
-  // router.delete("/:id", authMiddleware, controller.deleteCategoryByIdHandler);
+  router.put("/:id", authMiddleware, controller.putBudgetByIdHandler);
+  router.delete("/:id", authMiddleware, controller.deleteBudgetByIdHandler);
   return router;
 };

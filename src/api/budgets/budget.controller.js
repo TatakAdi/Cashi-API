@@ -54,6 +54,45 @@ class BudgetController {
       next(err);
     }
   };
+
+  putBudgetByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const budgetId = req.params.id;
+    const payload = req.body;
+
+    try {
+      const data = await this._service.updateBudgetById(
+        userId,
+        budgetId,
+        payload,
+      );
+
+      res.json({
+        status: "success",
+        message: "Budget berhasil di update",
+        data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  deleteBudgetByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const budgetId = req.params.id;
+
+    try {
+      const data = await this._service.deleteBudgetById(userId, budgetId);
+
+      res.json({
+        status: "success",
+        message: "Budget berhasil dihapus",
+        data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = BudgetController;

@@ -136,6 +136,7 @@ class BudgetRepository {
   async deleteBudget(budgetId) {
     return this._prisma.budget.delete({
       where: { id: budgetId },
+      select: { id: true },
     });
   }
 

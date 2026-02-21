@@ -18,7 +18,7 @@ class BudgetService {
       category_ids = [],
     } = payload;
     return this._prisma.$transaction(async (tx) => {
-      const budgetRepo = new this._repository(tx);
+      const budgetRepo = new this._repositoryClass(tx);
 
       let period_end = null;
 
@@ -68,6 +68,43 @@ class BudgetService {
     const data = await this._repository.findBudgetById(budgetId);
 
     return data;
+  }
+
+  async updateBudgetById(userId, budgetId, payload) {
+    const budget = await this._repository.verifyUserOwnBudget(userId, budgetId);
+
+    if (!budget.id) {
+      throw new NotFoundError("Budget tidak ditemukan");
+    }
+
+    const { budget_name, type, amount } = payload;
+
+    if ((amount !== null) & (amount !== 0)) {
+      await this._repository.updateBudgetLimit(budgetId, amount);
+    }
+
+    const result = await this._repository.updateBudget(budgetId, {
+      budget_name,
+      type,
+    });
+
+    if (!result.id) {
+      throw new InvariantError("Terjadi kesalahan saat update Budget");
+    }
+
+    return result;
+  }
+
+  async deleteBudgetById(userId, budgetId) {
+    const budget = await this._repository.verifyUserOwnBudget(userId, budgetId);
+
+    if (!budget.id) {
+      throw new NotFoundError("Budget tidak ditemukan atau sudah dihapus");
+    }
+
+    const result = await this._repository.deleteBudget(budgetId);
+
+    return result;
   }
 }
 
