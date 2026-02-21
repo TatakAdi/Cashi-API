@@ -71,6 +71,7 @@ class BudgetRepository {
       select: {
         id: true,
         budget_name: true,
+        type: true,
         amount_limit: true,
         current_amount: true,
       },
@@ -95,7 +96,7 @@ class BudgetRepository {
   }
 
   async updateBudgetLimit(budgetId, amount) {
-    return this._prisma.update({
+    return this._prisma.budget.update({
       where: {
         id: budgetId,
       },

@@ -19,6 +19,41 @@ class BudgetController {
       next(err);
     }
   };
+
+  getBudgetsperUserHandler = async (req, res, next) => {
+    const userId = req.user.id;
+
+    try {
+      const data = await this._service.getAllBudgetPerUser(userId);
+      res.json({
+        status: "success",
+        message: "Data budget User berhasil diambil",
+        data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  getOneBudgetByIdperUserHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const budgetId = req.params.id;
+
+    try {
+      const data = await this._service.getOneBudgetByIdPerUser(
+        userId,
+        budgetId,
+      );
+
+      res.json({
+        status: "success",
+        message: "Data satu budget berhasil diambil",
+        data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 
 module.exports = BudgetController;

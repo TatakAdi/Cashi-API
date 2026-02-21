@@ -3,9 +3,10 @@ const NotFoundError = require("../../exceptions/NotFoundError");
 const AuthenticationError = require("../../exceptions/AuthenticationError");
 
 class BudgetService {
-  constructor(prisma, repository) {
+  constructor(prisma, classRepository, repository) {
     this._prisma = prisma;
-    this._repository = repository;
+    this._repositoryClass = classRepository; // Untuk request yang memiliki Transaksi
+    this._repository = repository; // Buat Read
   }
 
   async createBudget(userId, payload) {
@@ -49,6 +50,24 @@ class BudgetService {
 
       return { budget_id: budgetId };
     });
+  }
+
+  async getAllBudgetPerUser(userId) {
+    const result = await this._repository.findAllBudgetsByUser(userId);
+
+    return result;
+  }
+
+  async getOneBudgetByIdPerUser(userId, budgetId) {
+    const result = await this._repository.verifyUserOwnBudget(userId, budgetId);
+
+    if (!result.id) {
+      throw new NotFoundError("Budget tidak ditemukan");
+    }
+
+    const data = await this._repository.findBudgetById(budgetId);
+
+    return data;
   }
 }
 

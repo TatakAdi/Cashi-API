@@ -44,7 +44,11 @@ const authenticationsService = new AuthenticationsService(
   authenticationRepository,
 );
 const categoryService = new CategoryService(categoryRepository);
-const budgetService = new BudgetService(prisma, BudgetRepository);
+const budgetService = new BudgetService(
+  prisma,
+  BudgetRepository,
+  budgetRepository,
+);
 
 app.use(
   "/users",

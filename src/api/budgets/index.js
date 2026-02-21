@@ -12,8 +12,8 @@ module.exports = ({ service, authMiddleware }) => {
     authMiddleware,
     controller.postBudgetHandler,
   );
-  // router.get("/", authMiddleware, controller.getAllCategoryPerUserHandler);
-  // router.get("/:id", authMiddleware, controller.getOneCategoryByIdHandler);
+  router.get("/", authMiddleware, controller.getBudgetsperUserHandler);
+  router.get("/:id", authMiddleware, controller.getOneBudgetByIdperUserHandler);
   // router.put(
   //   "/:id",
   //   validate(putCategorySchema),
