@@ -19,7 +19,7 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 | **Authentication**                 | ✅ Complete    | 100%     | -            |
 | **Users**                          | ✅ Complete    | 100%     | -            |
 | **Categories**                     | ✅ Complete    | 100%     | -            |
-| **Budgets**                        | 🟡 Partial     | 20%      | HIGH         |
+| **Budgets**                        | 🟡 Partial     | 70%      | MEDIUM       |
 | **Transactions**                   | ❌ Not Started | 0%       | **CRITICAL** |
 | **Budget-Transaction Integration** | ❌ Not Started | 0%       | **CRITICAL** |
 
@@ -201,19 +201,18 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 
 ---
 
-## 🟡 Budget Feature (20% Complete)
+## 🟡 Budget Feature (70% Complete)
 
-> **Status**: Create budget sudah ada, tapi Read/Update/Delete masih di-comment.
-> Service methods masih stub.
+> **Status**: CRUD endpoints sudah complete! Tinggal validation schemas dan
+> integrasi dengan transactions.
 
 ### 🛣️ Endpoints to Uncomment & Implement
 
 #### 1. Get All Budgets
 
 - [ ] Uncomment route: **GET** `/budgets` in `src/api/budgets/index.js`
-- [ ] Implement `getAllBudgetPerUser()` in `BudgetsService.js` (currently empty
-      stub)
-- [ ] Return:
+- [x] Uncomment route: **GET** `/budgets` in `src/api/budgets/index.js`
+- [x] Implement `getAllBudgetPerUser()` in `BudgetsService.js`n:
   ```json
   {
     "budgets": [
@@ -241,9 +240,10 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 #### 2. Get Budget by ID
 
 - [ ] Uncomment route: **GET** `/budgets/:id` in `src/api/budgets/index.js`
-- [ ] Implement `getBudgetById(userId, budgetId)` in BudgetsService
-- [ ] Verify ownership
-- [ ] Include:
+- [x] Uncomment route: **GET** `/budgets/:id` in `src/api/budgets/index.js`
+- [x] Implement `getBudgetById(userId, budgetId)` in BudgetsService (as
+      `getOneBudgetByIdPerUser`)
+- [x] Include:
   - [ ] Categories
   - [ ] Current BudgetUsage
   - [ ] Recent transactions (last 10)
@@ -253,26 +253,29 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 #### 3. Update Budget
 
 - [ ] Uncomment route: **PUT** `/budgets/:id` in `src/api/budgets/index.js`
-- [ ] Implement `updateBudget(userId, budgetId, payload)` in BudgetsService
-- [ ] Updatable fields:
-  - [ ] budget_name
-  - [ ] amount_limit
-  - [ ] type (tricky - may need to recalculate period)
+- [x] Uncomment route: **PUT** `/budgets/:id` in `src/api/budgets/index.js`
+- [x] Implement `updateBudget(userId, budgetId, payload)` in BudgetsService (as
+      `updateBudgetById`)
+- [x[ ] budget_name
+  - [x] budget_name
+  - [x] amount_limit (as `amount`)
+  - [x] type
   - [ ] categories (array of category_ids - sync BudgetCategory)
-- [ ] Validations:
-  - [ ] User owns budget
+- [x] Validations:
+  - [x] User owns budget
   - [ ] User owns all categories
   - [ ] Cannot change from Monthly to OpenEnded if has multiple periods
-- [ ] Use BudgetsRepository methods: `updateBudget()`, `removeBudgetCategory()`,
-      `addBudgetCategory()`
+- [x] Use BudgetsRepository methods: `updateBudget()`, `updateBudgetLimit
 
 #### 4. Delete Budget
 
 - [ ] Uncomment route: **DELETE** `/budgets/:id` in `src/api/budgets/index.js`
-- [ ] Implement `deleteBudget(userId, budgetId)` in BudgetsService
-- [ ] Verify ownership
-- [ ] Use `BudgetsRepository.deleteBudget()`
-- [ ] Cascade deletes (BudgetCategory, BudgetUsage) handled by Prisma schema
+- [x] Uncomment route: **DELETE** `/budgets/:id` in `src/api/budgets/index.js`
+- [x] Implement `deleteBudget(userId, budgetId)` in BudgetsService (as
+      `deleteBudgetById`)
+- [x] Verify ownership
+- [x] Use `BudgetsRepository.deleteBudget()`
+- [x
 
 ### ✅ Validation Schemas (budget.validation.js)
 
@@ -296,31 +299,33 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 
 ### 🎯 Service Methods to Implement
 
-- [ ] `getAllBudgetPerUser(userId, filters)` - Currently empty stub
-  - [ ] Get all user budgets from repository
+- [ ] `getAllBudgetPerUser(userId, filters)` - Currently empty stub -x]
+      `getAllBudgetPerUser(userId, filters)` - ✅ Implemented
+  - [x] Get all user budgets from repository
   - [ ] Calculate current usage for each
   - [ ] Determine status (on_track/warning/over_budget)
   - [ ] Filter by type/status if provided
 
-- [ ] `getBudgetById(userId, budgetId)`
-  - [ ] Verify ownership
-  - [ ] Get budget with all relations
+- [x] `getBudgetById(userId, budgetId)` - ✅ Implemented (as
+      `getOneBudgetByIdPerUser`)
+  - [x] Verify ownership
+  - [x] Get budget with all relations
   - [ ] Calculate detailed analytics
   - [ ] Get recent transactions
   - [ ] Get usage history
 
-- [ ] `updateBudget(userId, budgetId, payload)`
-  - [ ] Verify ownership
+- [x] `updateBudget(userId, budgetId, payload)` - ✅ Implemented (as
+      `updateBudgetById`)
+  - [x] Verify ownership
   - [ ] Validate new categories ownership
-  - [ ] Update budget fields
+  - [x] Update budget fields
   - [ ] Sync BudgetCategory table
-  - [ ] Return updated budget
+  - [x] Return updated budget
 
-- [ ] `deleteBudget(userId, budgetId)`
-  - [ ] Verify ownership
-  - [ ] Delete via repository
-  - [ ] Set transactions budget_id to NULL (handled by onDelete: SetNull)
-
+- [x] `deleteBudget(userId, budgetId)` - ✅ Implemented (as `deleteBudgetById`)
+  - [x] Verify ownership
+  - [x] Delete via repository
+  - [x
 - [ ] `getBudgetStatus(budgetId)` - Helper method
   - [ ] Calculate percentage used
   - [ ] Return status: "on_track" (<80%), "warning" (80-100%), "over_budget"
@@ -342,6 +347,7 @@ Aplikasi dianggap MVP-ready ketika user dapat:
 #### 1. Transaction Creation → Update Budget
 
 - [ ] In `TransactionsService.createTransaction()`:
+
   ```javascript
   if (payload.budget_id && payload.type === "Expenses") {
     // Check if budget would be exceeded
@@ -493,13 +499,13 @@ The app is MVP-ready when:
 5. ❌ **User can view transaction history with filters**
 6. ❌ **User can see total income and expense summary**
 7. ❌ **User can create budget for categories**
-8. ❌ **User can see budget usage and remaining amount**
-9. ❌ **Budget auto-tracks spending when transactions are added**
-10. ❌ **User gets warning when approaching budget limit**
+8. ✅ **User can create budget for categories**
+9. 🟡 **User can see budget usage and remaining amount** (partial - need
+   enhancement)
+10. ❌ **Budget auto-tracks spending when transactions are added**
+11. ❌ **User gets warning when approaching budget limit**
 
-**Current Progress: 3/10 ✅ (30%)**
-
----
+## \*\*Current Progress: 4.5/10 ✅ (45
 
 ## 📚 References
 
