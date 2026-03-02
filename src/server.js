@@ -56,6 +56,7 @@ const budgetService = new BudgetService(
   budgetRepository,
 );
 const transactionService = new TransactionService(
+  usersRepository,
   categoryRepository,
   transactionRepository,
 );

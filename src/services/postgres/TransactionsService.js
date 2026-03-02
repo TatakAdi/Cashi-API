@@ -3,7 +3,8 @@ const NotFoundError = require("../../exceptions/NotFoundError");
 const AuthenticationError = require("../../exceptions/AuthenticationError");
 
 class TransactionService {
-  constructor(categoryRepository, transactionRepository) {
+  constructor(userRepository, categoryRepository, transactionRepository) {
+    this._userRepository = userRepository;
     this._categoryRepository = categoryRepository;
     this._transactionRepository = transactionRepository;
   }
@@ -43,6 +44,12 @@ class TransactionService {
         note,
         category_id: categoryId,
       });
+
+    if (type === "Expenses") {
+      await this._userRepository.decreaseBalance(userId, amount);
+    } else {
+      await this._userRepository.increaseBalance(userId, amount);
+    }
 
     return { transactionId };
   }
