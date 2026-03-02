@@ -55,6 +55,26 @@ class TransactionController {
       next(error);
     }
   };
+
+  deleteTransactionByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const transactionId = req.params.id;
+
+    try {
+      const data = await this._service.deleteOneTransactionById(
+        userId,
+        transactionId,
+      );
+
+      res.json({
+        status: "success",
+        message: "Data satu transaksi berhasil dihapus",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = TransactionController;

@@ -76,6 +76,30 @@ class TransactionService {
 
     return data;
   }
+
+  async deleteOneTransactionById(userId, transactionId) {
+    const transaction =
+      await this._transactionRepository.verifyUserOwnTransaction(
+        userId,
+        transactionId,
+      );
+    if (!transaction.id) {
+      throw new NotFoundError("Transaksi tidak ditemukan");
+    }
+    const data =
+      await this._transactionRepository.findTransationById(transactionId);
+
+    if (data.type === "Expenses") {
+      await this._userRepository.increaseBalance(userId, data.amount);
+    } else {
+      await this._userRepository.decreaseBalance(userId, data.amount);
+    }
+
+    const result =
+      await this._transactionRepository.deleteTransaction(transactionId);
+
+    return result;
+  }
 }
 
 module.exports = TransactionService;
