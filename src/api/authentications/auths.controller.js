@@ -65,7 +65,7 @@ class AuthenticationsHandler {
       });
 
       res.redirect(
-        `${process.env.FRONTENT_URL}/oauth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+        `${process.env.FRONTEND_URL}/oauth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
       );
     } catch (err) {
       next(err);
