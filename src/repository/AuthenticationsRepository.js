@@ -12,6 +12,15 @@ class AuthenticationsRepository {
     });
   }
 
+  async findUserByEmail(email) {
+    return this._prisma.user.findFirst({
+      where: { email },
+      select: {
+        email: true,
+      },
+    });
+  }
+
   async saveRefreshToken({ id, refreshToken, userId }) {
     return this._prisma.authentication.create({
       data: {

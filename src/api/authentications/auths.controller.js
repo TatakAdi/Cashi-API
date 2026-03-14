@@ -45,5 +45,31 @@ class AuthenticationsHandler {
       next(err);
     }
   };
+
+  googleLoginHandler = async (req, res, next) => {
+    try {
+      const url = await this._service.getGoogleAuthUrl();
+      res.redirect(url);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  googleCallbackHandler = async (req, res, next) => {
+    try {
+      const { access_token, refresh_token } = req.query;
+
+      const tokens = await this._service.handleGoogleCallback({
+        accessToken: access_token,
+        refreshToken: refresh_token,
+      });
+
+      res.redirect(
+        `${process.env.FRONTENT_URL}/oauth-success?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}`,
+      );
+    } catch (err) {
+      next(err);
+    }
+  };
 }
 module.exports = AuthenticationsHandler;

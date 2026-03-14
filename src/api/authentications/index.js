@@ -16,8 +16,10 @@ module.exports = ({ service }) => {
   router.post(
     "/refresh",
     validate(refreshTokenSchema),
-    controller.refreshTokenVerifyHandler
+    controller.refreshTokenVerifyHandler,
   );
   router.post("/logout", validate(logoutSchema), controller.logoutHandler);
+  router.get("/google", controller.googleLoginHandler);
+  router.get("/google/callback", controller.googleCallbackHandler);
   return router;
 };
