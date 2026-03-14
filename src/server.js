@@ -48,6 +48,7 @@ const transactionRepository = new TransactionRepository(prisma);
 const usersService = new UsersService(usersRepository, categoryRepository);
 const authenticationsService = new AuthenticationsService(
   authenticationRepository,
+  usersRepository,
 );
 const categoryService = new CategoryService(categoryRepository);
 const budgetService = new BudgetService(
