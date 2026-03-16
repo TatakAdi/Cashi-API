@@ -41,7 +41,7 @@ class UsersService {
     );
   }
 
-  async getProfile(userId) {
+  async getUserProfile(userId) {
     const user = await this._usersRepository.findById(userId);
 
     if (!user) {
