@@ -54,9 +54,27 @@ class TransactionService {
     return { transactionId };
   }
 
-  async getAllTransactions(userId) {
-    const result =
-      await this._transactionRepository.findAllTransactionsByUser(userId);
+  async getAllTransactions(userId, query) {
+    let { page, limit, type } = query;
+
+    if (type) {
+      const mapping = {
+        income: "Income",
+        expense: "Expenses",
+        expenses: "Expenses",
+      };
+
+      type = mapping[type.toLowerCase()] || null;
+    }
+
+    const result = await this._transactionRepository.findTransactionsByUser(
+      userId,
+      {
+        page: Number(page),
+        limit: Number(limit),
+        type,
+      },
+    );
 
     return result;
   }

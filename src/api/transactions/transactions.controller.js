@@ -22,9 +22,10 @@ class TransactionController {
 
   getTransactionsHandler = async (req, res, next) => {
     const userId = req.user.id;
+    const query = req.query;
 
     try {
-      const data = await this._service.getAllTransactions(userId);
+      const data = await this._service.getAllTransactions(userId, query);
 
       res.json({
         status: "success",

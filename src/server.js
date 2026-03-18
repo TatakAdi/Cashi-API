@@ -34,6 +34,10 @@ const transactions = require("./api/transactions");
 const TransactionRepository = require("./repository/TransactionsRepository");
 const TransactionService = require("./services/postgres/TransactionsService");
 
+// Dashboard
+const dashboard = require("./api/dashboard");
+const DashboardService = require("./services/postgres/DashboardService");
+
 const app = express();
 app.use(express.json());
 
@@ -58,6 +62,10 @@ const budgetService = new BudgetService(
 );
 const transactionService = new TransactionService(
   usersRepository,
+  categoryRepository,
+  transactionRepository,
+);
+const dashboardService = new DashboardService(
   categoryRepository,
   transactionRepository,
 );
@@ -88,6 +96,8 @@ app.use(
   "/transactions",
   transactions({ service: transactionService, authMiddleware }),
 );
+
+app.use("/dashboard", dashboard({ service: dashboardService, authMiddleware }));
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK" });

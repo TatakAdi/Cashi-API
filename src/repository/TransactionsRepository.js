@@ -68,9 +68,11 @@ class TransactionRepository {
   //       - Options: { limit, offset, sortBy, sortOrder }
   //       - Return: Array of transactions
 
-  async findAllTransactionsByUser(userId) {
+  async findTransactionsByUser(userId, options = {}) {
+    const { limit, type, page } = options;
+
     return this._prisma.transaction.findMany({
-      where: { user_id: userId },
+      where: { user_id: userId, ...(type && { type }) },
       select: {
         id: true,
         transaction_name: true,
@@ -78,6 +80,11 @@ class TransactionRepository {
         amount: true,
         transaction_date: true,
       },
+      orderBy: {
+        transaction_date: "desc",
+      },
+      ...(limit && { take: limit }),
+      ...(page && limit && { skip: (page - 1) * limit }),
     });
   }
 
