@@ -78,6 +78,14 @@ class BudgetRepository {
     });
   }
 
+  async findMonthlyBudget() {
+    return prisma.budget.findMany({
+      where: {
+        type: "Monthly",
+      },
+    });
+  }
+
   async verifyUserOwnBudget(userId, budgetId) {
     return this._prisma.budget.findUnique({
       where: { id: budgetId, user_id: userId },

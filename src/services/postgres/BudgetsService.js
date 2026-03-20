@@ -32,6 +32,8 @@ class BudgetService {
           59,
           59,
         );
+      } else {
+        period_end = payload.period_end;
       }
       const { id: budgetId } = await budgetRepo.createBudget({
         user_id: userId,
@@ -106,6 +108,12 @@ class BudgetService {
 
     return result;
   }
+
+  // async handleMonthlyReset(){
+  //   const now = new Date()
+
+  //   const budgets = await this._repository.
+  // }
 }
 
 module.exports = BudgetService;
