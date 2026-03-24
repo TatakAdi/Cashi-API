@@ -10,5 +10,6 @@ module.exports = ({ service, authMiddleware }) => {
     authMiddleware,
     controller.getDashboardTransactionHandler,
   );
+  router.get("/budgets", authMiddleware, controller.getDashboardBudgetsHandler);
   return router;
 };

@@ -68,6 +68,7 @@ const transactionService = new TransactionService(
 const dashboardService = new DashboardService(
   categoryRepository,
   transactionRepository,
+  budgetRepository,
 );
 
 app.use(
