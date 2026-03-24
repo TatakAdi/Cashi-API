@@ -7,7 +7,7 @@ module.exports = () => {
       const authHeader = req.headers.authorization;
 
       if (!authHeader) {
-        throw new AuthenticationError("Missing Authorization Error");
+        throw new AuthenticationError("Missing Authentication Error");
       }
 
       const token = authHeader.replace("Bearer ", "");
