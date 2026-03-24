@@ -79,6 +79,11 @@ class TransactionRepository {
         type: true,
         amount: true,
         transaction_date: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         transaction_date: "desc",
