@@ -9,6 +9,7 @@ module.exports = ({ service, authMiddleware }) => {
   router.post("/", authMiddleware, controller.postTransactionHandler);
   router.get("/", authMiddleware, controller.getTransactionsHandler);
   router.get("/:id", authMiddleware, controller.getTransactionByIdHandler);
+  router.put("/:id", authMiddleware, controller.putTransactionByIdHandler);
   router.delete(
     "/:id",
     authMiddleware,

@@ -231,6 +231,23 @@ class BudgetRepository {
     });
   }
 
+  // for transaction
+  async findUsageByBudgetPeriod(budgetId, transactionDate) {
+    const date = new Date(transactionDate);
+    return this._prisma.budgetUsage.findFirst({
+      where: {
+        budget_id: budgetId,
+        period_start: {
+          lte: date,
+        },
+        period_end: {
+          gte: date,
+        },
+      },
+      select: { id: true },
+    });
+  }
+
   async increaseUsedAmount(usageId, amount) {
     return this._prisma.budgetUsage.update({
       where: { id: usageId },
@@ -250,6 +267,116 @@ class BudgetRepository {
         },
       },
     });
+  }
+
+  // Bonus method
+  async applyBudgetDelta(budgetId, amount) {
+    // amount (+) = Nambah usage
+    // amount (-) = Ngurangin Usage
+
+    await this.decreaseCurrentAmountBudget(budgetId, amount);
+
+    let usage = await this.findCurrentUsage(budgetId);
+
+    if (!usage) {
+      usage = await this.createBudgetUsage(
+        budgetId,
+        new Date().toISOString(),
+        null,
+      );
+    }
+
+    if (amount > 0) {
+      await this.increaseUsedAmount(usage.id, amount);
+    } else {
+      await this.decreaseUsedAmount(usage.id, Math.abs(amount));
+    }
+  }
+
+  async applyTransactionImpact({ oldData, newData }) {
+    const isOldExpenses = oldData.type === "Expenses";
+    const isNewExpenses = newData.type === "Expenses";
+
+    const oldBudgetId = oldData.budget?.id ?? null;
+    const newBudgetId = newData.budget_id ?? null;
+
+    const getUsage = async (budgetId, date) => {
+      if (!budgetId) return null;
+
+      return this.findUsageByBudgetPeriod(budgetId, date);
+    };
+
+    const oldUsage = await getUsage(oldBudgetId, oldData.transaction_date);
+    const newUsage = await getUsage(newBudgetId, newData.transaction_date);
+
+    // ===============================
+    // 🔥 CASE 1: Expense → Income
+    // ===============================
+    if (isOldExpenses && !isNewExpenses) {
+      if (oldUsage) {
+        await this.decreaseUsedAmount(oldUsage.id, oldData.amount);
+      }
+
+      if (oldBudgetId) {
+        await this.decreaseCurrentAmountBudget(oldBudgetId, oldData.amount);
+      }
+
+      return;
+    }
+
+    // ===============================
+    // 🔥 CASE 2: Income → Expense
+    // ===============================
+    if (!isOldExpenses && isNewExpenses) {
+      if (newUsage) {
+        await this.increaseUsedAmount(newUsage.id, newData.amount);
+      }
+
+      if (newBudgetId) {
+        await this.increaseCurrentAmountBudget(newBudgetId, newData.amount);
+      }
+      return;
+    }
+
+    // ===============================
+    // 🔥 CASE 3: Expense → Expense
+    // ===============================
+    if (isOldExpenses && isNewExpenses) {
+      const sameBudget = oldBudgetId === newBudgetId;
+      const sameUsage = oldUsage?.id === newUsage?.id;
+
+      // Subcase A : sama semua => delta saja
+      if (sameBudget && sameUsage) {
+        const delta = newData.amount - oldData.amount;
+
+        if (delta > 0) {
+          await this.increaseUsedAmount(newUsage.id, delta);
+          await this.increaseCurrentAmountBudget(newBudgetId, delta);
+        } else if (delta < 0) {
+          await this.decreaseUsedAmount(newUsage.id, Math.abs(delta));
+          await this.decreaseCurrentAmountBudget(newUsage.id, Math.abs(delta));
+        }
+
+        return;
+      }
+
+      // Subcase B : pindah budget / periode
+      if (oldUsage) {
+        await this.decreaseUsedAmount(oldUsage.id, oldData.amount);
+      }
+
+      if (oldBudgetId) {
+        await this.decreaseCurrentAmountBudget(oldBudgetId, oldData.amount);
+      }
+
+      if (newUsage) {
+        await this.increaseUsedAmount(newUsage.id, newData.amount);
+      }
+
+      if (newBudgetId) {
+        await this.increaseCurrentAmountBudget(newBudgetId, newData.amount);
+      }
+    }
   }
 }
 

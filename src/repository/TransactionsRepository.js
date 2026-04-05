@@ -51,11 +51,13 @@ class TransactionRepository {
         note: true,
         category: {
           select: {
+            id: true,
             name: true,
           },
         },
         budget: {
           select: {
+            id: true,
             budget_name: true,
           },
         },
@@ -121,6 +123,14 @@ class TransactionRepository {
   //       - Update data transaksi
   //       - UpdateData: { amount, type, description, categoryId, transactionDate }
   //       - Return: Updated transaction object
+
+  async updateTransaction(transactionId, data) {
+    return this._prisma.transaction.update({
+      where: { id: transactionId },
+      data: { ...data },
+      select: { id: true },
+    });
+  }
 
   // ============================================
   // DELETE OPERATIONS

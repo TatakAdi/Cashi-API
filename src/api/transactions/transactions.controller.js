@@ -57,6 +57,28 @@ class TransactionController {
     }
   };
 
+  putTransactionByIdHandler = async (req, res, next) => {
+    const userId = req.user.id;
+    const transactionId = req.params.id;
+    const payload = req.body;
+
+    try {
+      const data = await this._service.updateOneTransactionById(
+        userId,
+        transactionId,
+        payload,
+      );
+
+      res.json({
+        status: "success",
+        message: "Data transaksi berhasil diperbarui",
+        data,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
+
   deleteTransactionByIdHandler = async (req, res, next) => {
     const userId = req.user.id;
     const transactionId = req.params.id;
